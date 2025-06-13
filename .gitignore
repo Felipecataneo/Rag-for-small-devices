@@ -13,4 +13,4 @@ model_cache
 vector_db
 pdfs/*
 !pdfs/.gitkeep
-.env
+
