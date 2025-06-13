@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cliente RAG</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .query-section {
+            margin-bottom: 30px;
+        }
+
+        .query-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .query-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #6c757d;
+            border: 2px solid #e9ecef;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .server-url {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .results-section {
+            margin-top: 30px;
+        }
+
+        .sources-section, .response-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .source-item {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 1px solid #e9ecef;
+            transition: all 0.2s ease;
+        }
+
+        .source-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+        }
+
+        .source-name {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 4px;
+        }
+
+        .source-details {
+            font-size: 12px;
+            color: #6c757d;
+            display: flex;
+            gap: 15px;
+        }
+
+        .similarity-score {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .response-text {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            line-height: 1.6;
+            font-size: 16px;
+            color: #333;
+            min-height: 60px;
+            white-space: pre-wrap;
+        }
+
+        .status {
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status.loading {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .typing-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #667eea;
+            animation: typing 1.5s infinite;
+            margin-left: 4px;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { opacity: 0.3; }
+            30% { opacity: 1; }
+        }
+
+        .icon {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Cliente RAG</h1>
+        
+        <div class="query-section">
+            <textarea 
+                id="queryInput" 
+                class="query-input" 
+                placeholder="Digite sua pergunta aqui... (ex: Qual a principal conclusão do paper sobre programação estocástica?)"
+                rows="3"
+            ></textarea>
+            
+            <div class="controls">
+                <input 
+                    type="text" 
+                    id="serverUrl" 
+                    class="server-url" 
+                    value="http://localhost:8000/rag/query"
+                    placeholder="URL do servidor RAG"
+                >
+                <button id="queryBtn" class="btn btn-primary">
+                    <span id="queryBtnText">Consultar</span>
+                </button>
+                <button id="clearBtn" class="btn btn-secondary">Limpar</button>
+            </div>
+        </div>
+
+        <div id="resultsSection" class="results-section hidden">
+            <div id="statusDiv" class="status loading">
+                Processando consulta...
+            </div>
+
+            <div id="sourcesSection" class="sources-section hidden">
+                <div class="section-title">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                    </svg>
+                    Fontes Encontradas
+                </div>
+                <div id="sourcesList"></div>
+            </div>
+
+            <div id="responseSection" class="response-section hidden">
+                <div class="section-title">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M9,22A1,1 0 0,1 8,21V18H4A2,2 0 0,1 2,16V4C2,2.89 2.9,2 4,2H20A2,2 0 0,1 22,4V16A2,2 0 0,1 20,18H13.9L10.2,21.71C10,21.9 9.75,22 9.5,22H9Z"/>
+                    </svg>
+                    Resposta
+                    <span id="typingIndicator" class="typing-indicator hidden"></span>
+                </div>
+                <div id="responseText" class="response-text"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class RAGClient {
+            constructor() {
+                this.initializeElements();
+                this.attachEventListeners();
+                this.isQuerying = false;
+            }
+
+            initializeElements() {
+                this.queryInput = document.getElementById('queryInput');
+                this.serverUrl = document.getElementById('serverUrl');
+                this.queryBtn = document.getElementById('queryBtn');
+                this.clearBtn = document.getElementById('clearBtn');
+                this.resultsSection = document.getElementById('resultsSection');
+                this.statusDiv = document.getElementById('statusDiv');
+                this.sourcesSection = document.getElementById('sourcesSection');
+                this.sourcesList = document.getElementById('sourcesList');
+                this.responseSection = document.getElementById('responseSection');
+                this.responseText = document.getElementById('responseText');
+                this.queryBtnText = document.getElementById('queryBtnText');
+                this.typingIndicator = document.getElementById('typingIndicator');
+            }
+
+            attachEventListeners() {
+                this.queryBtn.addEventListener('click', () => this.executeQuery());
+                this.clearBtn.addEventListener('click', () => this.clearResults());
+                
+                this.queryInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                        this.executeQuery();
+                    }
+                });
+            }
+
+            async executeQuery() {
+                const query = this.queryInput.value.trim();
+                const url = this.serverUrl.value.trim();
+
+                if (!query) {
+                    alert('Por favor, digite uma pergunta.');
+                    return;
+                }
+
+                if (!url) {
+                    alert('Por favor, insira a URL do servidor.');
+                    return;
+                }
+
+                this.setLoadingState(true);
+                this.clearResults();
+                this.showResults();
+
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ query: query })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
+                    }
+
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let responseStarted = false;
+
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        
+                        if (done) break;
+
+                        const chunk = decoder.decode(value);
+                        const lines = chunk.split('\n').filter(line => line.trim());
+
+                        for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                                try {
+                                    const data = JSON.parse(line.substring(6));
+                                    this.handleStreamData(data);
+                                    responseStarted = true;
+                                } catch (e) {
+                                    console.warn('Erro ao parsear linha:', line, e);
+                                }
+                            }
+                        }
+                    }
+
+                    if (responseStarted) {
+                        this.setSuccessState();
+                    } else {
+                        throw new Error('Nenhum dado recebido do servidor');
+                    }
+
+                } catch (error) {
+                    console.error('Erro na consulta:', error);
+                    this.setErrorState(error.message);
+                } finally {
+                    this.setLoadingState(false);
+                }
+            }
+
+            handleStreamData(data) {
+                switch (data.type) {
+                    case 'sources':
+                        this.displaySources(data.data);
+                        break;
+                    case 'llm_token':
+                        this.appendToken(data.data);
+                        break;
+                    default:
+                        console.log('Tipo de dados desconhecido:', data.type, data.data);
+                }
+            }
+
+            displaySources(sources) {
+                this.sourcesSection.classList.remove('hidden');
+                this.sourcesList.innerHTML = '';
+
+                sources.forEach((source, index) => {
+                    const sourceElement = document.createElement('div');
+                    sourceElement.className = 'source-item';
+                    sourceElement.innerHTML = `
+                        <div class="source-name">📄 ${source.source}</div>
+                        <div class="source-details">
+                            <span>Chunk: ${source.chunk_id}</span>
+                            <span class="similarity-score">${(source.similarity * 100).toFixed(1)}% similaridade</span>
+                        </div>
+                    `;
+                    this.sourcesList.appendChild(sourceElement);
+                });
+            }
+
+            appendToken(token) {
+                if (!this.responseSection.classList.contains('hidden')) {
+                    this.responseText.textContent += token;
+                } else {
+                    this.responseSection.classList.remove('hidden');
+                    this.responseText.textContent = token;
+                    this.typingIndicator.classList.remove('hidden');
+                }
+                
+                // Auto-scroll para o final
+                this.responseText.scrollTop = this.responseText.scrollHeight;
+            }
+
+            setLoadingState(loading) {
+                this.isQuerying = loading;
+                this.queryBtn.disabled = loading;
+                this.queryBtnText.textContent = loading ? 'Consultando...' : 'Consultar';
+                
+                if (loading) {
+                    this.statusDiv.className = 'status loading';
+                    this.statusDiv.textContent = 'Processando consulta...';
+                    this.typingIndicator.classList.remove('hidden');
+                } else {
+                    this.typingIndicator.classList.add('hidden');
+                }
+            }
+
+            setSuccessState() {
+                this.statusDiv.className = 'status success';
+                this.statusDiv.textContent = '✓ Consulta concluída com sucesso';
+            }
+
+            setErrorState(message) {
+                this.statusDiv.className = 'status error';
+                this.statusDiv.textContent = `✗ Erro: ${message}`;
+            }
+
+            showResults() {
+                this.resultsSection.classList.remove('hidden');
+            }
+
+            clearResults() {
+                this.sourcesSection.classList.add('hidden');
+                this.responseSection.classList.add('hidden');
+                this.sourcesList.innerHTML = '';
+                this.responseText.textContent = '';
+                this.resultsSection.classList.add('hidden');
+            }
+        }
+
+        // Inicializar o cliente quando a página carregar
+        document.addEventListener('DOMContentLoaded', () => {
+            new RAGClient();
+        });
+    </script>
+</body>
+</html>

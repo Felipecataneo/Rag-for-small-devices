@@ -1,0 +1,32 @@
+fastapi==0.110.0
+uvicorn[standard]==0.29.0
+pydantic==2.6.4
+ollama
+
+
+# --- Machine Learning & Embeddings ---
+# NOTA: torch e torchvision devem ser instalados separadamente (veja instruções acima)
+# Deixá-los aqui sem versão garante que o pip os reconheça como instalados.
+torch
+torchvision
+sentence-transformers==4.1.0
+transformers==4.52.4
+tokenizers
+
+# --- Processamento de Dados e Vetores ---
+# NumPy é a base para operações vetoriais
+numpy
+# Usado para extração de texto dos PDFs no seu código
+PyPDF2
+# Usado para o filtro de busca rápida no seu código
+bloom-filter2
+
+# --- Utilitários e Monitoramento ---
+# Monitoramento de recursos do sistema (CPU, memória)
+psutil==5.9.6
+# Carrega variáveis de ambiente do arquivo .env
+python-dotenv==1.0.0
+# Barra de progresso para loops longos
+tqdm==4.66.1
+# Necessário para o FastAPI lidar com uploads de formulário
+python-multipart==0.0.9
