@@ -11,5 +11,6 @@ wheels/
 
 model_cache
 vector_db
-pdfs
+pdfs/*
+!pdfs/.gitkeep
 .env

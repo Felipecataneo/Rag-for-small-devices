@@ -54,7 +54,8 @@ O sistema é composto por duas partes principais:
 Primeiro, clone o repositório:
 ```bash
 git clone https://github.com/seu-usuario/raspberry-rag.git
-cd raspberry-rag
+cd Rag-for-small-devices-main
+
 ```
 
 Crie e ative um ambiente virtual:
@@ -148,4 +149,3 @@ Contribuições são bem-vindas! Sinta-se à vontade para abrir uma issue ou env
 ## 📄 Licença
 
 Este projeto é distribuído sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
-```
