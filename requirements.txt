@@ -30,3 +30,4 @@ python-dotenv==1.0.0
 tqdm==4.66.1
 # Necessário para o FastAPI lidar com uploads de formulário
 python-multipart==0.0.9
+hf_xet
